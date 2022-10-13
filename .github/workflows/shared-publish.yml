@@ -1,0 +1,58 @@
+name: Shared Publish Release
+
+on: 
+  workflow_call:
+    inputs:
+      JuiceRefVersion:
+        required: true
+        type: string
+    secrets:
+      NUGET_ORG_KEY:
+        required: true
+      GIT_HUB_PAT:
+        required: true
+
+env:
+  GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
+  GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
+  JuiceRefVersion: ${{ inputs.JuiceRefVersion }}
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check github.ref starts with 'refs/tags/'
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      run: |
+        echo Error! github.ref does not start with 'refs/tags'
+        echo github.ref: ${{ github.ref }}
+        exit 1
+    - name: Set version number environment variable
+      env:
+        github_ref: ${{ github.ref }}
+      run: |
+        version="${github_ref:10}"
+        echo version=$version
+        echo "version=$version" >> $GITHUB_ENV
+    - name: Set Juice RC Version
+      if: ${{ contains(github.ref, 'rc') }}
+      run: |
+        juiceRefVer=${{ env.JuiceRefVersion }}
+        echo JuiceRefVersion=$juiceRefVer-rc.*
+        echo "JuiceRefVersion=$juiceRefVer-rc.*" >> $GITHUB_ENV
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release -p:Version=${{env.version}}
+    - name: Pack
+      run: dotnet pack --no-build --configuration Release -p:Version=${{env.version}}
+    - name: PushNuget
+      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_ORG_KEY }} --skip-duplicate

@@ -1,0 +1,43 @@
+name: Shared Pack
+
+on: 
+  workflow_call:
+    inputs:
+      Stage:
+        required: true
+        type: string
+      JuiceRefVersion:
+        required: true
+        type: string
+
+env:
+  GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
+  GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
+  VersionSuffix: ${{ inputs.Stage }}.${{ github.run_number }}
+  JuiceRefVersion: '${{ inputs.JuiceRefVersion }}-${{ inputs.Stage }}.*'
+jobs:
+  pack:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Output variables
+      run: |
+        echo Run number ${{ github.run_number }}
+        echo VersionSuffix ${{env.VersionSuffix}}
+        echo JuiceRefVersion ${{env.JuiceRefVersion}}
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}}
+    - name: Pack
+      run: dotnet pack --no-build --configuration Release --version-suffix ${{env.VersionSuffix}}
+    - name: Push Github packages
+      run: dotnet nuget push **/*.nupkg --source "github" --skip-duplicate

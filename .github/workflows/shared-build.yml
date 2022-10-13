@@ -1,0 +1,41 @@
+name: Shared Build
+
+on: 
+  workflow_call:
+    inputs:
+      Stage:
+        required: true
+        type: string
+      JuiceRefVersion:
+        required: true
+        type: string
+
+env:
+  GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
+  GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
+  VersionSuffix: ${{ inputs.Stage }}.${{ github.run_number }}
+  JuiceRefVersion: '${{ inputs.JuiceRefVersion }}-${{ inputs.Stage }}.*'
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Output variables
+      run: |
+        echo Run number ${{ github.run_number }}
+        echo VersionSuffix ${{env.VersionSuffix}}
+        echo JuiceRefVersion ${{env.JuiceRefVersion}}
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}}
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
