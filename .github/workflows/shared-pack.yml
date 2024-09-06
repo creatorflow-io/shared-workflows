@@ -11,7 +11,7 @@ env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
   VersionSuffix: ${{ inputs.Stage }}.${{ github.run_number }}
-  JuiceRefSuffix: '-${{ inputs.Stage }}.*'
+  JuiceRefSuffix: ''
 jobs:
   pack:
 
@@ -22,6 +22,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Set Juice Suffix
+      if: ${{ inputs.Stage != '' }}
+      run: |
+        refSuffix="-${{ inputs.Stage }}.*"
+        echo "JuiceRefSuffix=$refSuffix" >> $GITHUB_ENV
     - name: Output variables
       run: |
         echo Run number ${{ github.run_number }}
