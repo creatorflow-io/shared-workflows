@@ -2,10 +2,6 @@ name: Shared Publish Release
 
 on: 
   workflow_call:
-    inputs:
-      JuiceRefVersion:
-        required: true
-        type: string
     secrets:
       NUGET_ORG_KEY:
         required: true
@@ -15,7 +11,6 @@ on:
 env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
-  JuiceRefVersion: ${{ inputs.JuiceRefVersion }}
   JuiceRefSuffix: ''
 jobs:
   publish:
@@ -37,17 +32,11 @@ jobs:
     - name: Set Juice RC Version
       if: ${{ contains(github.event.release.tag_name, 'rc') }}
       run: |
-        juiceRefVer=${{ env.JuiceRefVersion }}
-        echo JuiceRefVersion=$juiceRefVer-rc.*
-        echo "JuiceRefVersion=$juiceRefVer-rc.*" >> $GITHUB_ENV
-        echo "JuiceRefSuffix=-rc" >> $GITHUB_ENV
+        echo "JuiceRefSuffix=-rc.*" >> $GITHUB_ENV
     - name: Set Juice beta Version
       if: ${{ contains(github.event.release.tag_name, 'beta') }}
       run: |
-        juiceRefVer=${{ env.JuiceRefVersion }}
-        echo JuiceRefVersion=$juiceRefVer-beta.*
-        echo "JuiceRefVersion=$juiceRefVer-beta.*" >> $GITHUB_ENV
-        echo "JuiceRefSuffix=-beta" >> $GITHUB_ENV
+        echo "JuiceRefSuffix=-beta.*" >> $GITHUB_ENV
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v3
       with:
