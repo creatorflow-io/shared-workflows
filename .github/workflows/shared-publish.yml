@@ -16,7 +16,7 @@ env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
   JuiceRefVersion: ${{ inputs.JuiceRefVersion }}
-
+  JuiceRefSuffix: ''
 jobs:
   publish:
 
@@ -40,12 +40,14 @@ jobs:
         juiceRefVer=${{ env.JuiceRefVersion }}
         echo JuiceRefVersion=$juiceRefVer-rc.*
         echo "JuiceRefVersion=$juiceRefVer-rc.*" >> $GITHUB_ENV
+        echo "JuiceRefSuffix=-rc" >> $GITHUB_ENV
     - name: Set Juice beta Version
       if: ${{ contains(github.event.release.tag_name, 'beta') }}
       run: |
         juiceRefVer=${{ env.JuiceRefVersion }}
         echo JuiceRefVersion=$juiceRefVer-beta.*
         echo "JuiceRefVersion=$juiceRefVer-beta.*" >> $GITHUB_ENV
+        echo "JuiceRefSuffix=-beta" >> $GITHUB_ENV
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v3
       with:

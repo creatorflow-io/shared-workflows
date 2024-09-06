@@ -15,6 +15,7 @@ env:
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
   VersionSuffix: ${{ inputs.Stage }}.${{ github.run_number }}
   JuiceRefVersion: '${{ inputs.JuiceRefVersion }}-${{ inputs.Stage }}.*'
+  JuiceRefSuffix: '-${{ inputs.Stage }}'
 jobs:
   pack:
 
@@ -30,6 +31,7 @@ jobs:
         echo Run number ${{ github.run_number }}
         echo VersionSuffix ${{env.VersionSuffix}}
         echo JuiceRefVersion ${{env.JuiceRefVersion}}
+        echo JuiceRefSuffix ${{env.JuiceRefSuffix}}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
