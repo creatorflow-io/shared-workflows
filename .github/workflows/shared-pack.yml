@@ -10,7 +10,7 @@ on:
 env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
-  VersionSuffix: ${{ inputs.Stage }}.${{ github.run_number }}
+  VersionSuffix: rc.${{ github.run_number }}
   JuiceRefSuffix: ''
 jobs:
   pack:
@@ -27,6 +27,8 @@ jobs:
       run: |
         refSuffix="-${{ inputs.Stage }}.*"
         echo "JuiceRefSuffix=$refSuffix" >> $GITHUB_ENV
+        versionSuffix="${{ inputs.Stage }}.${{ github.run_number }}"
+        echo "VersionSuffix=$versionSuffix" >> $GITHUB_ENV
     - name: Output variables
       run: |
         echo Run number ${{ github.run_number }}
