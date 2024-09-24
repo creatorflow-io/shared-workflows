@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: [ '8.0.x', '9.0.x' ]
+        dotnet-version: [ '8.0.x']
 
     steps:
     - uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
       run: |
         echo "JuiceRefSuffix=-beta.*" >> $GITHUB_ENV
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
