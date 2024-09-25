@@ -41,7 +41,7 @@ jobs:
         echo TargetFramework ${{env.TargetFramework}}
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore --property:AppTargetFramework=${{ env.TargetFramework }}
     - name: Build
       run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}} --property:AppTargetFramework=${{ env.TargetFramework }}
     - name: Test
