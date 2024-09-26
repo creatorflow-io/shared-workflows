@@ -51,6 +51,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release -p:Version=${{env.version}} --property:AppTargetFramework=${{ env.TargetFramework }}
     - name: Pack
-      run: dotnet pack --no-build --configuration Release -p:Version=${{env.version}}
+      run: dotnet pack --no-build --configuration Release -p:Version=${{env.version}} --property:AppTargetFramework=${{ env.TargetFramework }}
     - name: PushNuget
       run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_ORG_KEY }} --skip-duplicate
