@@ -23,12 +23,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ matrix.dotnet-version }}
-        dotnet-quality: 'preview'
     - name: Set target framework preview
       if: ${{ contains(matrix.dotnet-version, '9.0') }}
       run: |
@@ -39,7 +33,11 @@ jobs:
         echo VersionSuffix ${{env.VersionSuffix}}
         echo JuiceRefSuffix ${{env.JuiceRefSuffix}}
         echo TargetFramework ${{env.TargetFramework}}
-
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+        dotnet-quality: 'preview'
     - name: Restore dependencies
       run: dotnet restore --property:AppTargetFramework=${{ env.TargetFramework }}
     - name: Build
