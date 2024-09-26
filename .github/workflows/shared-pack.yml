@@ -12,7 +12,6 @@ env:
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
   VersionSuffix: rc.${{ github.run_number }}
   JuiceRefSuffix: ''
-  TargetFramework: 'net8.0'
 jobs:
   pack:
 
@@ -30,27 +29,26 @@ jobs:
         echo "JuiceRefSuffix=$refSuffix" >> $GITHUB_ENV
         versionSuffix="${{ inputs.Stage }}.${{ github.run_number }}"
         echo "VersionSuffix=$versionSuffix" >> $GITHUB_ENV
-    - name: Set target framework preview
-      if: ${{ contains(matrix.dotnet-version, '9.0') }}
-      run: |
-        echo "TargetFramework=net9.0" >> $GITHUB_ENV
+   
     - name: Output variables
       run: |
         echo Run number ${{ github.run_number }}
         echo VersionSuffix ${{env.VersionSuffix}}
         echo JuiceRefSuffix ${{env.JuiceRefSuffix}}
-        echo TargetFramework ${{env.TargetFramework}}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ matrix.dotnet-version }}
+        dotnet-version: |
+          8.0.x
+          9.0.x
+        dotnet-quality: 'preview'
 
     - name: Restore dependencies
-      run: dotnet restore --property:AppTargetFramework=${{ env.TargetFramework }}
+      run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}} --property:AppTargetFramework=${{ env.TargetFramework }}
+      run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}}
     - name: Pack
-      run: dotnet pack --no-build --configuration Release --version-suffix ${{env.VersionSuffix}} --property:AppTargetFramework=${{ env.TargetFramework }}
+      run: dotnet pack --no-build --configuration Release --version-suffix ${{env.VersionSuffix}}
     - name: Push Github packages
       run: dotnet nuget push **/*.nupkg --source "github" --skip-duplicate
