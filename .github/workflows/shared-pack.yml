@@ -42,7 +42,7 @@ jobs:
         dotnet-quality: 'preview'
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore --no-cache
     - name: Build
       run: dotnet build --no-restore --configuration Release --version-suffix ${{env.VersionSuffix}}
     - name: Pack
