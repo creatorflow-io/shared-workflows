@@ -7,6 +7,12 @@ on:
         required: true
       GIT_HUB_PAT:
         required: true
+    inputs:
+      Target:
+        type: string
+        default: |
+          8.0.x
+          9.0.x
 
 env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
@@ -38,9 +44,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
+        dotnet-version: ${{inputs.Target}}
         dotnet-quality: 'preview'
     - name: Restore dependencies
       run: dotnet restore --no-cache
