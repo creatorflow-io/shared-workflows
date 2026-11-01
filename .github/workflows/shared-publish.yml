@@ -1,10 +1,16 @@
 name: Shared Publish Release
 
+# Publishes to nuget.org with trusted publishing (OIDC) when NUGET_USER is set, else with the NUGET_ORG_KEY API key.
+# Trusted publishing needs the calling job to grant `id-token: write` (see README).
 on: 
   workflow_call:
     secrets:
+      NUGET_USER:
+        description: nuget.org profile name that owns the trusted publishing policy
+        required: false
       NUGET_ORG_KEY:
-        required: true
+        description: long-lived nuget.org API key, used only when NUGET_USER is not set
+        required: false
       GIT_HUB_PAT:
         required: true
     inputs:
@@ -19,6 +25,7 @@ env:
   GITHUB_PACKAGE_USERNAME: ${{ github.actor }}
   GITHUB_PACKAGE_TOKEN: ${{ secrets.GIT_HUB_PAT }}
   JuiceRefSuffix: ''
+  NUGET_USER: ${{ secrets.NUGET_USER }}
 jobs:
   publish:
 
@@ -53,5 +60,19 @@ jobs:
       run: dotnet build --no-restore --configuration Release -p:Version=${{env.version}}
     - name: Pack
       run: dotnet pack --no-build --configuration Release -p:Version=${{env.version}}
+    # The temporary key lives one hour, so log in right before pushing.
+    - name: NuGet login (trusted publishing)
+      id: login
+      if: ${{ env.NUGET_USER != '' }}
+      uses: NuGet/login@v1
+      with:
+        user: ${{ env.NUGET_USER }}
     - name: PushNuget
-      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_ORG_KEY }} --skip-duplicate
+      env:
+        NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY || secrets.NUGET_ORG_KEY }}
+      run: |
+        if [ -z "$NUGET_API_KEY" ]; then
+          echo "::error::Set the NUGET_USER secret (trusted publishing) or NUGET_ORG_KEY (API key)."
+          exit 1
+        fi
+        dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
